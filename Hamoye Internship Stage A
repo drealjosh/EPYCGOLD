@@ -1,0 +1,84 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import figure
+import seaborn as sns
+data = pd.read_csv('FoodBalanceSheets_E_Africa_NOFLAG.csv', encoding='ISO-8859-1')
+data.tail()
+def quality_report(df):
+    """
+    Description: Displays quality of data in terms of missing values, 
+    unique numbers, datatypes etc.
+    
+    Arguments: Dataframe
+    """
+    dtypes = df.dtypes
+    nuniq = df.T.apply(lambda x: x.nunique(), axis=1)
+    total = df.isnull().sum().sort_values(ascending = False)
+    percent = (df.isnull().sum()/df.isnull().count()*100).sort_values(ascending = False)
+    quality_df  = pd.concat([total, percent, nuniq, dtypes], axis=1, keys=['Total NaN', 'Percent of NaN','Nunique', 'Dtype'])
+    display(quality_df)
+
+
+def object_count_plot(df):
+    """
+    Description : Plot countplot for all categorical features 
+    present in the dataframe passed
+    
+    Argument : Dataframe
+    """
+    
+    for var in df.columns:
+        if df[var].dtype == 'object':
+            print(df[var].value_counts())
+            plt.figure(figsize=(12,5))
+            g = sns.countplot(x=var,data=df)
+            g.set_xticklabels(g.get_xticklabels(), rotation=90, ha="right")
+            plt.tight_layout()
+            plt.show()
+            
+def numeric_distribution_plot(df):
+    """
+    Description : Gives distribution plot for all the numeric features
+    in the dataframe passed
+    
+    Argument : Dataframe
+    """
+    for col in df.columns:
+        if df[col].dtype != 'object':
+            print(df[col].describe())
+            plt.figure(figsize=(12,5))
+            plt.title("Distribution of "+col)
+            ax = sns.distplot(df[col].dropna())
+            plt.tight_layout()
+            plt.show()
+            
+quality_report(data)
+data.describe()
+
+data.Y2014.fillna(data.Y2014.median(), inplace=True)
+data.Y2015.fillna(data.Y2015.median(), inplace= True)
+data.Y2016.fillna(data.Y2016.median(), inplace=True)
+data.Y2017.fillna(data.Y2017.median(), inplace= True)
+data.Y2018.fillna(data.Y2018.median(), inplace= True)
+
+quality_report(data)
+numeric_distribution_plot(data)
+
+data.iplot(kind='hist')
+sns.boxplot(data['Y2017'])
+
+data.duplicated().any()
+
+data1 = data.groupby('Item Code')['Y2014','Y2017'].sum()
+data1
+
+data2 = data.groupby('Element')['Y2014','Y2015','Y2016','Y2017', 'Y2018'].sum()
+data2
+
+data3 = data.groupby('Element')['Y2018'].sum()
+data3.describe
+
+data4 = data.groupby(['Area','Element'])['Y2018'].sum()
+data4
+
